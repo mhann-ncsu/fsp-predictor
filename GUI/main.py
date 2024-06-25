@@ -1,4 +1,3 @@
-# noinspection PyUnresolvedReferences
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -114,5 +113,3 @@ if __name__ == '__main__':
 	window = MainWindow()
 	window.show()  # Important!
 	sys.exit(app.exec_())
-
-
