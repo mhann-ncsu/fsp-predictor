@@ -1,4 +1,3 @@
-# noinspection PyUnresolvedReferences
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -32,10 +31,11 @@ class InvertDialog(QDialog, QMainWindow):
         self.setLayout(grid)
 
         self.setWindowTitle("Image Inversion")
-        # self.setFixedSize(QSize(800, 600))
+        self.resize(800, 600)
 
         self.imageFilename = None
         self.outputPath = None
+        self.normalInvert = True
 
     def createConfigGroup(self): # taken from WuFei
         self.configGroup = QGroupBox('Configuration')
@@ -100,12 +100,13 @@ class InvertDialog(QDialog, QMainWindow):
         self.niRB = QRadioButton("Standard")
         self.niRB.setToolTip("Standard image inversion.")
         self.niRB.setChecked(True)
+        self.niRB.toggled.connect(self.normalInvertClicked) # implement properly
         hbox.addWidget(self.niRB)
 
-        self.fiRB = QRadioButton("Feature Invert")
-        self.fiRB.setToolTip("Swaps colors among features present in image.")
-        # self.fiRB.setEnabled(False)
-        hbox.addWidget(self.fiRB)
+        self.viRB = QRadioButton("Value Invert")
+        self.viRB.setToolTip("Inverts value component, color remains the same but brightness is affected.")
+        self.viRB.toggled.connect(self.valueInvertClicked)
+        hbox.addWidget(self.viRB)
 
         self.optionsGroup.setLayout(hbox)
 
@@ -125,6 +126,17 @@ class InvertDialog(QDialog, QMainWindow):
         )
         self.outputPathEdit.setText(self.outputPath)
 
+    def normalInvertClicked(self, s):
+        if s:
+            self.normalInvert = True
+            print("normal invert")
+
+    def valueInvertClicked(self, s):
+        if s:
+            self.normalInvert = False
+            print("value invert")
+            # self.signals.value_invert_signal.emit()
+
     def start(self):
         self.running_mode_ui()
 
@@ -141,7 +153,8 @@ class InvertDialog(QDialog, QMainWindow):
             return None
 
         self.invertThread = InvertThread(self.imageFilename,
-                                         self.outputPath)
+                                         self.outputPath,
+                                         self.normalInvert)
         self.invertThread.succeed_signal.connect(self.invert_succeed)
         self.invertThread.fail_signal.connect(self.invert_fail)
         self.invertThread.start()
@@ -173,3 +186,4 @@ class InvertDialog(QDialog, QMainWindow):
 
     def invert_fail(self, s):
         QMessageBox.critical(self, 'Error!', s, QMessageBox.Ok)
+
