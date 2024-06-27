@@ -10,8 +10,9 @@ class InvertDialog(QDialog, QMainWindow):
 
     def __init__(self, parent=None):
         super(InvertDialog, self).__init__(parent)
+
         app_icon = QIcon()
-        app_icon.addFile('static/images/ncsu_mse_inverted.png', QSize(128, 128))
+        app_icon.addFile("static/images/ncsu_mse_standard_invert.png", QSize(128, 128))
         self.setWindowIcon(app_icon)
 
         self.createConfigGroup()
@@ -37,28 +38,28 @@ class InvertDialog(QDialog, QMainWindow):
         self.outputPath = None
         self.normalInvert = True
 
-    def createConfigGroup(self): # taken from WuFei
-        self.configGroup = QGroupBox('Configuration')
+    def createConfigGroup(self):
+        self.configGroup = QGroupBox("Configuration")
 
         grid = QGridLayout()
 
         self.imageFilenameEdit = QLineEdit()
         self.loadImageFilenameBtn = QPushButton('')
-        self.loadImageFilenameBtn.setIcon(QIcon('static/images/folder.png'))
+        self.loadImageFilenameBtn.setIcon(QIcon("static/images/folder.png"))
         self.loadImageFilenameBtn.setIconSize(QSize(12, 12))
         self.loadImageFilenameBtn.setAutoDefault(False)
         self.loadImageFilenameBtn.clicked.connect(self.loadImageFilenameDialog)
-        grid.addWidget(QLabel('Image filename'), 0, 0)
+        grid.addWidget(QLabel("Image filename"), 0, 0)
         grid.addWidget(self.imageFilenameEdit, 0, 1)
         grid.addWidget(self.loadImageFilenameBtn, 0, 2)
 
         self.outputPathEdit = QLineEdit()
-        self.loadOutputPathBtn = QPushButton('')
-        self.loadOutputPathBtn.setIcon(QIcon('static/images/folder.png'))
+        self.loadOutputPathBtn = QPushButton("")
+        self.loadOutputPathBtn.setIcon(QIcon("static/images/folder.png"))
         self.loadOutputPathBtn.setIconSize(QSize(12, 12))
         self.loadOutputPathBtn.setAutoDefault(False)
         self.loadOutputPathBtn.clicked.connect(self.loadOutputPathDialog)
-        grid.addWidget(QLabel('Output path'), 1, 0)
+        grid.addWidget(QLabel("Output path"), 1, 0)
         grid.addWidget(self.outputPathEdit, 1, 1)
         grid.addWidget(self.loadOutputPathBtn, 1, 2)
 
@@ -72,6 +73,7 @@ class InvertDialog(QDialog, QMainWindow):
         self.commandGroup = QGroupBox("Commands")
 
         vbox = QVBoxLayout()
+
         self.startBtn = QPushButton("Invert")
         self.startBtn.setToolTip("Invert the image")
         self.startBtn.clicked.connect(self.start)
@@ -152,9 +154,7 @@ class InvertDialog(QDialog, QMainWindow):
             self.waiting_mode_ui()
             return None
 
-        self.invertThread = InvertThread(self.imageFilename,
-                                         self.outputPath,
-                                         self.normalInvert)
+        self.invertThread = InvertThread(self.imageFilename, self.outputPath, self.normalInvert)
         self.invertThread.succeed_signal.connect(self.invert_succeed)
         self.invertThread.fail_signal.connect(self.invert_fail)
         self.invertThread.start()
@@ -186,4 +186,3 @@ class InvertDialog(QDialog, QMainWindow):
 
     def invert_fail(self, s):
         QMessageBox.critical(self, 'Error!', s, QMessageBox.Ok)
-
