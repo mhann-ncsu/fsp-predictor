@@ -6,6 +6,7 @@ import sys
 
 from invertDialog import InvertDialog
 from fvgDialog import FVGDialog
+from segmentationDialog import SegmentationDialog
 
 class MainWindow(QWidget):
 
@@ -29,6 +30,10 @@ class MainWindow(QWidget):
 		invertBtn.setToolTip('Inverts image.')
 		invertBtn.clicked.connect(self.openInvertDialog) # make sure to match these up
 
+		segmentationBtn = QPushButton('Image segmentation')
+		segmentationBtn.setToolTip('Visualize segmentation results.')
+		segmentationBtn.clicked.connect(self.openSegmentationDialog)
+
 		pcBtn = QPushButton('Particle Counter')
 		pcBtn.setToolTip('Counts the number of particles within a micrograph.')
 		# pcBtn.clicked.connect(self.openPCDialog) # make sure to match these up
@@ -40,6 +45,7 @@ class MainWindow(QWidget):
 
 		vbox = QVBoxLayout()
 		vbox.addWidget(invertBtn)
+		vbox.addWidget(segmentationBtn)
 		vbox.addWidget(pcBtn)
 		vbox.addWidget(fvgBtn)
 		vbox.addStretch(2)
@@ -60,7 +66,7 @@ class MainWindow(QWidget):
 		quitBtn = QPushButton('&Quit')
 		quitBtn.clicked.connect(self.close)
 
-		versionLabel = QLabel('version 0.1')
+		versionLabel = QLabel('Version 0.2')
 
 		vbox = QVBoxLayout()
 		vbox.addWidget(aboutBtn)
@@ -76,6 +82,13 @@ class MainWindow(QWidget):
 		self.id = InvertDialog()
 		self.id.setModal(True)
 		self.id.exec()
+		self.show()
+
+	def openSegmentationDialog(self):
+		self.hide()
+		self.sd = SegmentationDialog()
+		self.sd.setModal(True)
+		self.sd.exec()
 		self.show()
 
 	# def openPCDialog(self):
