@@ -39,8 +39,8 @@ class FVGDialog(QDialog, QMainWindow):
         self.params = {} # base params list
         self.params['rotation'] = 1000
         self.params['traversal'] = 10
-        self.params['passNum'] = 3
-        self.params['passType'] = 'double'
+        self.params['passNum'] = 5
+        self.params['passType'] = 'single'
 
     def createConfigGroup(self):
         self.configGroup = QGroupBox("Configuration")
@@ -127,12 +127,12 @@ class FVGDialog(QDialog, QMainWindow):
         grid.addWidget(self.traverseParamEdit, 1, 1)
 
         self.numPassesEdit = QLineEdit()
-        self.numPassesEdit.setPlaceholderText("3")
+        self.numPassesEdit.setPlaceholderText("5")
         grid.addWidget(QLabel("Number of passes:"), 2, 0)
         grid.addWidget(self.numPassesEdit, 2, 1)
 
         self.passTypeEdit = QLineEdit()
-        self.passTypeEdit.setPlaceholderText("double")
+        self.passTypeEdit.setPlaceholderText("single")
         grid.addWidget(QLabel("Pass type (single/double):"), 3, 0)
         grid.addWidget(self.passTypeEdit, 3, 1)
 
