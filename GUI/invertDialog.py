@@ -186,3 +186,4 @@ class InvertDialog(QDialog, QMainWindow):
 
     def invert_fail(self, s):
         QMessageBox.critical(self, 'Error!', s, QMessageBox.Ok)
+
