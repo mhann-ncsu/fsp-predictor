@@ -12,13 +12,14 @@ class FVGDialog(QDialog, QMainWindow):
     def __init__(self, parent=None):
         super(FVGDialog, self).__init__(parent)
 
+        app_icon = QIcon()
+        app_icon.addFile("static/images/vector_dm.jpg", QSize(128, 128))
+        self.setWindowIcon(app_icon)
+
         self.createConfigGroup()
         self.createCommandGroup()
         self.createInputGroup()
 
-        app_icon = QIcon()
-        app_icon.addFile("static/images/vector_dm.jpg", QSize(128, 128))
-        self.setWindowIcon(app_icon)
         grid = QGridLayout()
 
         grid.addWidget(self.configGroup, 0, 0)
@@ -31,13 +32,15 @@ class FVGDialog(QDialog, QMainWindow):
         self.resize(720, 480)
 
         self.outputPrefix = None
-        self.filenamePattern = None
-        self.filenamePatternS = None # not sure if I need this
-        self.imagePath = None
+        self.PMAPath = None
         self.outputPath = None
-        self.outputFiletype = None
+        self.outputFiletype = '.csv' # default
 
-        # might need more things here idk
+        self.params = {} # base params list
+        self.params['rotation'] = 1000
+        self.params['traversal'] = 10
+        self.params['passNum'] = 3
+        self.params['passType'] = 'double'
 
     def createConfigGroup(self):
         self.configGroup = QGroupBox("Configuration")
@@ -48,24 +51,19 @@ class FVGDialog(QDialog, QMainWindow):
         self.outputPrefixEdit.setPlaceholderText(f"fv_{str(date.today())}")
         grid.addWidget(QLabel("Output prefix:"), 0, 0)
         grid.addWidget(self.outputPrefixEdit, 0, 1, 1, 2)
-        # not sure what each number does...
         self.outputPrefixEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        self.filenamePatternEdit = QLineEdit()
-        self.filenamePatternEdit.setPlaceholderText("*.csv *.xlsx")
-        grid.addWidget(QLabel("Feature vector filename pattern:"), 1, 0)
-        grid.addWidget(self.filenamePatternEdit, 1, 1, 1, 2)
-        self.filenamePatternEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-
-        self.imagePathEdit = QLineEdit()
-        self.loadImagePathBtn = QPushButton('')
-        self.loadImagePathBtn.setIcon(QIcon('static/images/folder.png'))
-        self.loadImagePathBtn.setIconSize(QSize(12, 12))
-        self.loadImagePathBtn.setAutoDefault(False)
-        self.loadImagePathBtn.clicked.connect(self.loadImagePathDialog)
-        grid.addWidget(QLabel('Image path'), 2, 0)
-        grid.addWidget(self.imagePathEdit, 2, 1)
-        grid.addWidget(self.loadImagePathBtn, 2, 2)
+        # NOT READY YET
+        # self.PMAPathEdit = QLineEdit()
+        # self.loadPMAPathBtn = QPushButton('')
+        # self.loadPMAPathBtn.setIcon(QIcon('static/images/folder.png'))
+        # self.loadPMAPathBtn.setToolTip("Select the Particle Morphology Analysis file")
+        # self.loadPMAPathBtn.setIconSize(QSize(12, 12))
+        # self.loadPMAPathBtn.setAutoDefault(False)
+        # self.loadPMAPathBtn.clicked.connect(self.loadPMAPathDialog)
+        # grid.addWidget(QLabel('PMA file:'), 2, 0)
+        # grid.addWidget(self.PMAPathEdit, 2, 1)
+        # grid.addWidget(self.loadPMAPathBtn, 2, 2)
 
         self.outputPathEdit = QLineEdit()
         self.loadOutputPathBtn = QPushButton('')
@@ -73,14 +71,14 @@ class FVGDialog(QDialog, QMainWindow):
         self.loadOutputPathBtn.setIconSize(QSize(12, 12))
         self.loadOutputPathBtn.setAutoDefault(False)
         self.loadOutputPathBtn.clicked.connect(self.loadOutputPathDialog)
-        grid.addWidget(QLabel('Output path'), 3, 0)
+        grid.addWidget(QLabel('Output path:'), 3, 0)
         grid.addWidget(self.outputPathEdit, 3, 1)
         grid.addWidget(self.loadOutputPathBtn, 3, 2)
 
         self.csvBtn = QRadioButton(".csv")
         self.csvBtn.setToolTip("Convert to .xlsx filetype.")
         self.csvBtn.setChecked(True)
-        self.csvBtn.clicked.connect(self.csvExport)  # implement this function
+        self.csvBtn.clicked.connect(self.csvExport)
         grid.addWidget(self.csvBtn, 4, 0)
 
         self.xlsxBtn = QRadioButton(".xlsx")
@@ -118,25 +116,25 @@ class FVGDialog(QDialog, QMainWindow):
 
         grid = QGridLayout()
 
-        self.rotationParam = QLineEdit()
-        self.rotationParam.setPlaceholderText("ex. 1000")
-        grid.addWidget(QLabel("Tool rotation (RPM)"), 0, 0)
-        grid.addWidget(self.rotationParam, 0, 1)
+        self.rotationParamEdit = QLineEdit()
+        self.rotationParamEdit.setPlaceholderText("1000")
+        grid.addWidget(QLabel("Tool rotation (RPM):"), 0, 0)
+        grid.addWidget(self.rotationParamEdit, 0, 1)
 
-        self.traverseParam = QLineEdit()
-        self.traverseParam.setPlaceholderText("ex. 10")
-        grid.addWidget(QLabel("Traversal rate (mm/min)"), 1, 0)
-        grid.addWidget(self.traverseParam, 1, 1)
+        self.traverseParamEdit = QLineEdit()
+        self.traverseParamEdit.setPlaceholderText("10")
+        grid.addWidget(QLabel("Traversal rate (mm/min):"), 1, 0)
+        grid.addWidget(self.traverseParamEdit, 1, 1)
 
-        self.numPasses = QLineEdit()
-        self.numPasses.setPlaceholderText("ex. 3")
-        grid.addWidget(QLabel("Number of passes"), 2, 0)
-        grid.addWidget(self.numPasses, 2, 1)
+        self.numPassesEdit = QLineEdit()
+        self.numPassesEdit.setPlaceholderText("3")
+        grid.addWidget(QLabel("Number of passes:"), 2, 0)
+        grid.addWidget(self.numPassesEdit, 2, 1)
 
-        self.passType = QLineEdit()
-        self.passType.setPlaceholderText("ex. double")
-        grid.addWidget(QLabel("Pass type (single/double)"), 3, 0)
-        grid.addWidget(self.passType, 3, 1)
+        self.passTypeEdit = QLineEdit()
+        self.passTypeEdit.setPlaceholderText("double")
+        grid.addWidget(QLabel("Pass type (single/double):"), 3, 0)
+        grid.addWidget(self.passTypeEdit, 3, 1)
 
         self.inputGroup.setLayout(grid)
 
@@ -148,13 +146,13 @@ class FVGDialog(QDialog, QMainWindow):
         print("xlsx export selected")
         self.outputFiletype = ".xlsx"
 
-    def loadImagePathDialog(self):
-        self.imagePath = QFileDialog.getExistingDirectory(
-            self,
-            'Load image path',
-            './'
-        )
-        self.imagePathEdit.setText(self.imagePath)
+    # def loadPMAPathDialog(self):
+    #     self.PMAPath = QFileDialog.getExistingDirectory(
+    #         self,
+    #         'Load PMA path',
+    #         './'
+    #     )
+    #     self.PMAPathEdit.setText(self.PMAPath)
 
     def loadOutputPathDialog(self):
         self.outputPath = QFileDialog.getExistingDirectory(
@@ -165,17 +163,16 @@ class FVGDialog(QDialog, QMainWindow):
         self.outputPathEdit.setText(self.outputPath)
 
     def validate(self):
-        if self.imagePath == '':
-            return False, 'Error: Please specify the path to the images.'
-        if not os.path.isdir(self.imagePath):
-            return False, 'Error: The path to the images is not valid.'
+        # if self.PMAPath == '':
+        #     return False, 'Error: Please specify the path to the images.'
+        # if not os.path.isdir(self.PMAPath):
+        #     return False, 'Error: The path to the images is not valid.'
         if self.outputPath == '':
             return False, 'Error: Please specify the path to save outputs.'
         if not os.path.isdir(self.outputPath):
             return False, 'Error: The path for output files is not valid.'
-
-        if not (self.featuresActive[0] or self.featuresActive[1] or self.featuresActive[2] or self.featuresActive[3]):
-            return False, 'Error: Feature set cannot be empty.'
+        if self.outputPrefix == '':
+            return False, 'Error: Please specify a filename'
 
         return True, None
 
@@ -189,48 +186,43 @@ class FVGDialog(QDialog, QMainWindow):
         self.running_mode_ui()
 
         self.outputPrefix = self.outputPrefixEdit.text()
-        self.filenamePattern = self.filenamePatternEdit.text()
-        self.imagePath = self.imagePathEdit.text()
+        # self.PMAPath = self.PMAPathEdit.text()
         self.outputPath = self.outputPathEdit.text()
 
-        if self.outputPrefix == "":
-            self.outputPrefix = "fv-" + str(date.today())
-        if self.filenamePattern == "":
-            self.filenamePattern = "*.csv *.xlsx"
+        # declaring parameters list from text inputs in the form field
+        if self.rotationParamEdit.text() != '':
+            self.params['rotation'] = int(self.rotationParamEdit.text())
+
+        if self.traverseParamEdit.text() != '':
+            self.params['traversal'] = int(self.traverseParamEdit.text())
+
+        if self.numPassesEdit.text() != '':
+            self.params['passNum'] = int(self.numPassesEdit.text())
+
+        if self.passTypeEdit.text() != '':
+            self.params['passType'] = self.passTypeEdit.text()
 
         ready, msg = self.validate()
         if not ready:
             QMessageBox.critical(self, 'Error!', msg, QMessageBox.Ok)
-            self.output(msg)
             self.waiting_mode_ui()
             return None
-        self.output('Start generating feature vector.')
 
-        self.filenamePatternS = self.filenamePattern.split(' ')
-        print('self.outputPrefix = ', self.outputPrefix)
-        print('self.filenamePattern = ', self.filenamePattern)
-        print('self.filenamePatternS =', self.filenamePatternS)
-        print('self.imagePath =', self.imagePath)
-        print('self.outputPath =', self.outputPath)
+    # @Debugging
+        # print('self.outputPrefix = ', self.outputPrefix)
+        # print('self.PMAPath =', self.PMAPath)
+        # print('self.outputPath = ', self.outputPath)
 
-        filenames = sorted([x for x in os.listdir(self.imagePath)
-                            if self.patternMatch(x)])
-        filenames = [os.path.join(self.imagePath, x) for x in filenames]
+        self.outputFilename = os.path.join(self.outputPath, self.outputPrefix + self.outputFiletype)
+        self.outputFilename = os.path.normpath(self.outputFilename)
 
-        outputFilename = self.outputPrefix + '_' + str(len(filenames)) + '_'
-        outputFilename = os.path.join(self.outputPath, f"{outputFilename}{self.outputFiletype}") # this might not work
-
-        self.fvThread = FVGThread(
-            filenames,
-            outputFilename
-        )
-        self.fvThread.complete_signal.connect(self.completed)
-        self.fvThread.start()
+        self.fvgThread = FVGThread(self.outputFilename, self.params)
+        self.fvgThread.complete_signal.connect(self.completed)
+        self.fvgThread.start()
 
     def stop(self):
-        self.output('Thread stopped.')
-        self.fvThread.stop()
-        self.fvThread.quit()
+        self.fvgThread.stop()
+        self.fvgThread.quit()
         self.waiting_mode_ui()
 
     def completed(self):
@@ -248,4 +240,3 @@ class FVGDialog(QDialog, QMainWindow):
         self.startBtn.setEnabled(True)
         self.stopBtn.update()
         self.startBtn.update()
-
